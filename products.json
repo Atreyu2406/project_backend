@@ -1,0 +1,47 @@
+[
+	{
+		"id": 1,
+		"title": "Harry Potter",
+		"description": "Película Fantasía",
+		"price": 6500,
+		"thumbnail": "harry.jpg",
+		"code": "AAA001",
+		"stock": 12
+	},
+	{
+		"id": 2,
+		"title": "Harry Potter 2",
+		"description": "Película Fantasía",
+		"price": 7200,
+		"thumbnail": "harry.jpg",
+		"code": "AAA002",
+		"stock": 1
+	},
+	{
+		"id": 3,
+		"title": "Harry Potter 3",
+		"description": "Película Fantasía",
+		"price": 4500,
+		"thumbnail": "harry.jpg",
+		"code": "AAA003",
+		"stock": 7
+	},
+	{
+		"id": 4,
+		"title": "Harry Potter 4",
+		"description": "Película Fantasía",
+		"price": 5555,
+		"thumbnail": "harry.jpg",
+		"code": "AAA004",
+		"stock": 24
+	},
+	{
+		"id": 5,
+		"title": "Harry Potter 5",
+		"description": "Película Fantasía",
+		"price": 9850,
+		"thumbnail": "harry.jpg",
+		"code": "AAA005",
+		"stock": 8
+	}
+]
