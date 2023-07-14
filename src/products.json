@@ -1,0 +1,20 @@
+[
+	{
+		"id": 4,
+		"title": "Carlovich",
+		"description": "Fantasía",
+		"price": 1254,
+		"thumbnail": "harry.jpg",
+		"code": "AAA452",
+		"stock": 2
+	},
+	{
+		"id": 5,
+		"title": "Oriana",
+		"description": "Fantasía",
+		"price": 1254,
+		"thumbnail": "harry.jpg",
+		"code": "AAA100",
+		"stock": 2
+	}
+]
