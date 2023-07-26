@@ -15,26 +15,27 @@ export class ProductManager {
         return JSON.parse(fileContent)
       }
 
-    addProduct = async(title, description, price, thumbnail, code, stock)  => {
+    addProduct = async(product)  => {
         let products = await this.getProducts()
-        if(!title || !description || !price || !thumbnail || !code || !stock) return console.log("Fields are missing")
-        let foundCode = products.find(item => item.code === code)
-        if(foundCode) return console.log("The code exists")
+        if(!product.title || !product.description || !product.price || !product.code || !product.stock) return "[ERR] Fields are missing"
+        let foundCode = products.find(item => item.code === product.code)
+        if(foundCode) return "[ERR] The code exists"
         const newId = await this.generateId()
-        products.push({ id: newId, title, description, price, thumbnail, code, stock })
+        products.push({ id: newId, status: true, thumbnails: [], ...product })
         await fs.promises.writeFile(this.path, JSON.stringify(products, null, "\t"))
+        return products
     }
 
     getProductById = async(id) => {
         let products = await this.getProducts()
-        let result = products.find(item => item.id === id)
-        if(!result) return console.log("Product Not Found")
+        let result = products.find(item => item.id == id)
+        if(!result) return "Product Not Found"
         return result
     }
 
     deleteProduct = async(id) => {
         let products = await this.getProducts()
-        let result = products.filter(item => item.id !== id)
+        let result = products.filter(item => item.id != id)
         if(result.length === products.length) return "ID not found"
         await fs.promises.writeFile(this.path, JSON.stringify(result, null, "\t"))
         return "Product delete seccessfully"
@@ -50,3 +51,4 @@ export class ProductManager {
 }
 
 const product = new ProductManager()
+

@@ -1,55 +1,65 @@
 import express from "express"
-import { ProductManager } from "./ProductManager.js"
-
-const product = new ProductManager()
-const fileContent = await product.getProducts()
+import cors from "cors"
+import handlebars from "express-handlebars"
+import { Server } from "socket.io"
+import productsRouter from "./routers/products.router.js"
+import cartsRouter from "./routers/carts.router.js"
+import viewsRouter from "./routers/views.router.js"
+import chatRouter from "./routers/chat.router.js"
+import mongoose from "mongoose"
 
 const app = express()
+app.use(cors())
+
+//template engine configuration
+app.engine("handlebars", handlebars.engine())
+app.set("views", "./src/views")
+app.set("view engine", "handlebars")
+
 app.use(express.json())
 
-app.get("/", (req, res) => {
-    res.status(200).json({ message: "Server OK" })
-})
-
-app.get("/products", async(req, res) => {
-    let limit = req.query.limit
-    if (limit > fileContent.length) return res.status(400).json ({ error: "Limit not valid"})
-    res.status(200).json({ payload: fileContent.slice(0, limit) })
-})
-
-app.get("/products/:pid", async(req, res) => {
-    let id = req.params.pid
-    let result = fileContent.find(item => item.id == id)
-    if(!result) return res.status(400).json({ error: "ID not found" })
-    res.status(200).json({ status: "successful", payload: result })
-})
-// app.post("/users", (req, res) => {
-//     let { id, name, age } = req.body
-//     if(!id || !name || !age) return res.status(400).json({ error: "Same fields are missing"})
-//     let userCreated = { id: parseInt(id), name, age: parseInt(age) }
-//     users.push(userCreated)
-//     res.status(201).json({ message: "User created", payload: userCreated})
+// app.get("/", (req, res) => {
+//     res.status(200).json({ message: "Server OK" })
 // })
 
-// app.put("/users/:id", (req, res) => {
-//     let id = req.params.id
-//     let newData = req.body
-//     let user = users.find(item => item.id == id)
-//     let userIndex = users.findIndex(item => item.id == id)
-//     users[userIndex] = {
-//         ...user,
-//         ...newData
-//     }
-//     res.status(200).json({ status: "User update" })
-// })
+//mongoose configuration
+try {
+    await mongoose.connect("mongodb+srv://atreyu2406:benja2012@cluster0.2dskaxd.mongodb.net/ecommerce");
+    console.log("Connected to MongoDB Atlas successfully!");
+} catch(err) {
+    console.error("Error connecting to MongoDB Atlas:", err.message);
+}
 
-// app.delete("/users/:id", (req, res) => {
-//     let id = req.params.id
-//     let result = users.filter(item => item.id != id)
-//     res.status(200).json({ message: "User deleted", payload: result})
-// })
+//socket.io configuration
+const serverHttp = app.listen(8080, () => console.log("Server Up..."))
+const io = new Server(serverHttp)
+app.use((req, res, next) => {
+    req.io = io
+    next()
+})
+
+app.use("/", express.static("./src/public"))
+app.use("/api/products", productsRouter)
+app.use("/api/carts", cartsRouter)
+app.use("/products", viewsRouter)
+app.use("/chat", chatRouter)
+
+const messages = []
+
+io.on("connection", socket => {
+    console.log("A connection has been made")
+    socket.broadcast.emit("alert")
+    socket.emit("logs", messages)
+    socket.on("message", data => {
+        messages.push(data)
+        io.emit("logs", messages)
+    })
+    socket.on("productList", data => {
+        console.log("Product list received on the server:", data);
+        io.emit("updatedProducts", data)
+    })
+})
 
 
 
-app.listen(8080, () => console.log("Server Up..."))
 
