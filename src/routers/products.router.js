@@ -9,9 +9,27 @@ const router = Router()
 
 router.get("/", async(req, res) => {
     try {
-        const limit = req.query.limit || 0
-        const result = await productModel.find().limit(limit).lean().exec()
-        res.status(200).json({ status: "success", payload: result})
+        const limit = req.query.limit || 10
+        const page = req.query.page || 1
+        const filterOptions = {}
+        if(req.query.stock) filterOptions.stock = req.query.stock
+        if(req.query.category) filterOptions.category = req.query.category
+        const paginateOptions = { limit, page }
+        if (req.query.sort === "asc") paginateOptions.sort = { price: 1 }
+        if (req.query.sort === "desc") paginateOptions.sort = { price: -1 }
+        const result = await productModel.paginate(filterOptions, paginateOptions)
+        res.status(200).json({
+            status: "success",
+            payload: result.docs,
+            totalPages: result.totalPages,
+            prevPages: result.prevPage,
+            nextPages: result.nextPage,
+            page: result.page,
+            hasPrevPage: result.hasPrevPage,
+            hasNextPage: result.hasNextPage
+        })
+        // const result = await productModel.find().limit(limit).lean().exec()
+        // res.status(200).json({ status: "success", payload: result})
     } catch(err) {
         res.status(500).json({ status: "error", error: err.message })
     }
@@ -75,11 +93,11 @@ router.put("/:pid", async (req, res) => {
 router.delete("/:pid", async(req, res) => {
     try {
         const id = req.params.pid
-        result = await productModel.findByIdAndDelete(id)
-        if(result === null) return res.status(404).json({ status: "error", error: "Not Found"})
+        const result = await productModel.findByIdAndDelete(id)
+        if(result === null) return res.status(404).json({ status: "error", error: "Not Found" })
         const products = await productModel.find().lean().exec()
         req.io.emit("updatedProducts", products)
-        res.status(200).json({ status: "success", payload: result})
+        res.status(200).json({ status: "success", payload: result })
     } catch(err){
         res.status(500).json({ status: "error", error: err.message })
     }
