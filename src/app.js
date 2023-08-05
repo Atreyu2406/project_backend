@@ -1,4 +1,5 @@
 import express from "express"
+import session from "express-session"
 import cors from "cors"
 import handlebars from "express-handlebars"
 import { Server } from "socket.io"
@@ -6,6 +7,7 @@ import productsRouter from "./routers/products.router.js"
 import cartsRouter from "./routers/carts.router.js"
 import viewsRouter from "./routers/views.router.js"
 import chatRouter from "./routers/chat.router.js"
+import userRouter from "./routers/user.router.js"
 import mongoose from "mongoose"
 
 const app = express()
@@ -21,6 +23,13 @@ app.use(express.json())
 // app.get("/", (req, res) => {
 //     res.status(200).json({ message: "Server OK" })
 // })
+
+//session configuration
+app.use(session({
+    secret: "victoriasecret",
+    resave: false,
+    saveUninitialized: true
+}))
 
 //mongoose configuration
 try {
@@ -43,6 +52,7 @@ app.use("/api/products", productsRouter)
 app.use("/api/carts", cartsRouter)
 app.use("/products", viewsRouter)
 app.use("/chat", chatRouter)
+app.use("/user", userRouter)
 
 const messages = []
 
