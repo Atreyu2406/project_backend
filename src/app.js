@@ -12,7 +12,8 @@ import sessionRouter from "./routers/session.router.js"
 import mongoose from "mongoose"
 import messageModel from "./dao/models/message.model.js"
 import __dirname from "./utils.js"
-
+import passport from "passport"
+import initializePassport from "./config/passport.config.js"
 const app = express()
 app.use(cors())
 
@@ -46,6 +47,10 @@ app.use(session({
     resave: true,
     saveUninitialized: true
 }))
+//Passport configuration
+initializePassport()
+app.use(passport.initialize())
+app.use(passport.session())
 
 //mongoose configuration
 try {

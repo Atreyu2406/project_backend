@@ -1,6 +1,7 @@
 import { Router } from "express";
 import userModel from "../dao/models/user.model.js";
-import { createHash, isValidPassword } from "../utils.js"
+import { isValidPassword } from "../utils.js"
+import passport from "passport";
 
 const router = Router()
 
@@ -10,17 +11,24 @@ router.get("/register", (req, res) => {
 })
 
 //API to create users in the database
-router.post("/register", async(req, res) => {
-    const userNew = {
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        age: req.body.age,
-        email: req.body.email,
-        password: createHash(req.body.password)
-    }
-    const user = new userModel(userNew)
-    await user.save()
+router.post("/register", passport.authenticate("register", {
+    failureRedirect: "/session/failRegister"
+}), async(req, res) => {
+    // const userNew = {
+    //     first_name: req.body.first_name,
+    //     last_name: req.body.last_name,
+    //     age: req.body.age,
+    //     email: req.body.email,
+    //     password: createHash(req.body.password)
+    // }
+    // const user = new userModel(userNew)
+    // await user.save()
     res.redirect("/session/login")
+})
+
+//View to failRegister
+router.get("/failRegister", (req, res) => {
+    res.json({ status: "error", error: "Failed register"})
 })
 
 //View to login
