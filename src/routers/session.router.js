@@ -1,6 +1,6 @@
 import { Router } from "express";
 import userModel from "../dao/models/user.model.js";
-import {createHash} from "../utils.js"
+import { createHash, isValidPassword } from "../utils.js"
 
 const router = Router()
 
@@ -16,7 +16,7 @@ router.post("/register", async(req, res) => {
         last_name: req.body.last_name,
         age: req.body.age,
         email: req.body.email,
-        password: req.body.password
+        password: createHash(req.body.password)
     }
     const user = new userModel(userNew)
     await user.save()
@@ -31,8 +31,9 @@ router.get("/login", (req, res) => {
 //API to login
 router.post("/login", async(req, res) => {
     const { email, password } = req.body
-    const user = await userModel.findOne({ email, password }).lean().exec()
-    if(!user) return res.status(400).json({ status: "error", error: "Error en el email o password" })
+    const user = await userModel.findOne({ email }).lean().exec()
+    if(!user) return res.status(401).json({ status: "error", error: "User not found" })
+    if(!isValidPassword(user, password)) return res.status(403).json({ status: "error", error: "Password incorrect" })
     req.session.user = user
     res.redirect("/products")
 })

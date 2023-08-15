@@ -11,15 +11,17 @@ import chatRouter from "./routers/chat.router.js"
 import sessionRouter from "./routers/session.router.js"
 import mongoose from "mongoose"
 import messageModel from "./dao/models/message.model.js"
+import __dirname from "./utils.js"
 
 const app = express()
 app.use(cors())
 
 //template engine configuration
 app.engine("handlebars", handlebars.engine())
-app.set("views", "./src/views")
+app.set("views", __dirname + "/views")
 app.set("view engine", "handlebars")
 
+app.use(express.static(__dirname + "/public"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
@@ -61,7 +63,6 @@ app.use((req, res, next) => {
     next()
 })
 
-app.use("/", express.static("./src/public"))
 app.use("/api/products", productsRouter)
 app.use("/api/carts", cartsRouter)
 app.use("/products", viewsRouter)
