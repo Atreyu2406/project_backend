@@ -2,11 +2,34 @@ import { Router } from "express";
 import cartModel from "../dao/models/cart.model.js"
 import productModel from "../dao/models/product.model.js";
 import { CartManager } from "../dao/fsManagers/CartManager.js";
+import { get } from "mongoose";
 
 const router = Router()
 
 const cart = new CartManager()
 const fileContent = await cart.getCarts()
+export const getProductsFromCart = async(req, res) => {
+    try {
+        const id = req.params.cid
+        const result = await cartModel.findById(id).populate("products.product").lean()
+        if (result === null) {
+            return {
+                statusCode: 404,
+                response: { status: "error", error: "Not found" }
+            }
+        }
+        return {
+            statusCode: 200,
+            response: { status: "success", payload: result }
+        }
+    } catch(err) {
+        return {
+            statusCode: 500,
+            response: { status: "error", error: err.message }
+        }
+    }
+}
+
 
 router.get("/", async(req, res) => {
     try {
@@ -22,14 +45,17 @@ router.get("/", async(req, res) => {
 })
 
 router.get("/:cid", async(req, res) => {
-    try {
-        const id = req.params.cid
-        const result = await cartModel.findById(id)
-        if(result === null) return res.status(404).json({ status: "error", error: "Not found"})
-        res.status(200).json({ status: "success", payload: result})
-    } catch(err) {
-        res.status(500).json({ status: "error", error: err.message })
-    }
+    const result = await getProductsFromCart(req, res)
+    res.status(result.statusCode).json(result.response)
+    // try {
+    //     const id = req.params.cid
+    //     const result = await cartModel.findById(id).populate("products.product").lean()
+    //     if(result === null) return res.status(404).json({ status: "error", error: "Not found"})
+    //     res.status(200).json({ status: "success", payload: result})
+    // } catch(err) {
+    //     res.status(500).json({ status: "error", error: err.message })
+    // }
+
     // let id = req.params.cid
     // let result = await cart.getCartById(id)
     // if(typeof result == "string") return res.status(400).json({ status: "error", error: result })
@@ -60,9 +86,12 @@ router.post("/:cid/product/:pid", async(req, res) => {
         if(productToAdd === null) return res.status(404).json({ status: "error", error: `Product with id=${pid} not found`})
 
         const productIndex = cartToUpdate.products.findIndex(item => item.product == pid)
-        if(productIndex > -1) cartToUpdate.products[productIndex].quantity += 1
-        cartToUpdate.products.push({ product: pid, quantity: 1 })
-
+        if(productIndex > -1) {
+            cartToUpdate.products[productIndex].quantity += 1
+        } else {
+            cartToUpdate.products.push({ product: pid, quantity: 1 })
+        }
+        
         const result = await cartModel.findByIdAndUpdate(cid, cartToUpdate, { returnDocument: "after" })
         res.status(201).json({ status: "success", payload: result })
     } catch(err) {
@@ -116,6 +145,7 @@ router.put("/:cid/product/:pid", async(req, res) => {
 
         const cartToUpdate = await cartModel.findById(cid)
         if(cartToUpdate === null) return res.status(404).json({ status: "error", error: `Cart width ID=${cid} not found`})
+
         const productToUpdate = await productModel.findById(pid)
         if(productToUpdate === null) return res.status(404).json({ status: "error", error: `Product width ID=${pid} not found`})
         

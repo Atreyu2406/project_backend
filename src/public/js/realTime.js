@@ -71,31 +71,31 @@ socket.on('updatedProducts', data => {
 });
 
 
-// // "listProducts" event received from the server
-// socket.on('updatedProducts', data => {
-//     // Update the table of products on the screen
-//     table.innerHTML =
-//         `
-//         <tr>
-//             <td><strong>Code</strong></td>
-//             <td><strong>Title</strong></td>
-//             <td><strong>Description</strong></td>
-//             <td><strong>Price</strong></td>  
-//             <td><strong>Stock</strong></td>  
-//             <td><strong>Button</strong></td>
-//         </tr>
-//         `
-//         for (product of data) {
-//             const tr = document.createElement("tr")
-//             tr.innerHTML = 
-//                 `
-//                 <td>${product.code}</td>
-//                 <td>${product.title}</td>
-//                 <td>${product.description}</td>
-//                 <td>${product.price}</td>  
-//                 <td>${product.stock}</td>
-//                 <td><button class="btn btn-danger" onclick="deleteProduct(${product.id})">Delete</button></td>
-//               `
-//             table.getElementsByTagName("tbody")[0].appendChild(tr)
-//         }
-// });
+// "listProducts" event received from the server
+socket.on('updatedProducts', data => {
+    // Update the table of products on the screen
+    table.innerHTML =
+        `
+        <tr>
+            <td><strong>Code</strong></td>
+            <td><strong>Title</strong></td>
+            <td><strong>Description</strong></td>
+            <td><strong>Price</strong></td>  
+            <td><strong>Stock</strong></td>  
+            <td><strong>Button</strong></td>
+        </tr>
+        `
+        for (product of data) {
+            const tr = document.createElement("tr")
+            tr.innerHTML = 
+                `
+                <td>${product.code}</td>
+                <td>${product.title}</td>
+                <td>${product.description}</td>
+                <td>${product.price}</td>  
+                <td>${product.stock}</td>
+                <td><button class="btn btn-danger" onclick="deleteProduct(${product.id})">Delete</button></td>
+              `
+            table.getElementsByTagName("tbody")[0].appendChild(tr)
+        }
+});

@@ -7,18 +7,18 @@
             <th><strong>Code</strong></th>
             <th><strong>Title</strong></th>
             <th><strong>Description</strong></th>
-            <th><strong>Thumbnails</strong></th>
+            <th><strong>Stock</strong></th>
             <th><strong>Price</strong></th>  
         </tr>
     </thead>
     <tbody>
-        {{#each products.docs}}
+        {{#each products}}
         <tr>
-            <td>{{this._id}}</td>
+            <td><button class="btn btn-success" onclick="addProductToCart(`{{this._id}}`)">Add To Cart</button></td>
             <td>{{this.code}}</td>
             <td>{{this.title}}</td>
             <td>{{this.description}}</td>
-            <td>{{this.thumbnails}}</td>
+            <td>{{this.stock}}</td>
             <td>{{this.price}}</td>
         </tr>
         {{/each}}
@@ -27,11 +27,35 @@
 </table>
 
 <div>
-    {{#if products.hasPrevPage}}
-        <a href="{{products.prevLink}}">Previus</a>
+    {{#if paginateInfo.hasPrevPage}}
+        <a href="{{paginateInfo.prevLink}}">Previus</a>
     {{/if}}
-    {{#if products.hasNextPage}}
-        <a href="{{products.nextLink}}">Next</a>
+    {{#if paginateInfo.hasNextPage}}
+        <a href="{{paginateInfo.nextLink}}">Next</a>
     {{/if}}
     
 </div>
+
+<script>
+    addProductToCart = (pid) => {
+        fecth("/api/carts", {
+            method: "post"
+        })
+            .then(result => result.json())
+            .then(result => {
+                if(result.status === "error") throw new Error(result.error)
+                return result.payload._id
+            })
+            .then(cid => 
+                fetch(`/api/carts/${cid}/product/${pid}`, {
+                    method: "post"
+                })
+            )
+            .then(result => result.json())
+            .then(result => {
+                if(result.status === "error") throw new Error(result.error)
+                alert("OK. Todo salió bien.")
+            })
+            .catch(err => alert(`Ocurrió un error: ${err}`))
+    }
+</script>

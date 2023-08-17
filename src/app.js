@@ -14,6 +14,7 @@ import messageModel from "./dao/models/message.model.js"
 import __dirname from "./utils.js"
 import passport from "passport"
 import initializePassport from "./config/passport.config.js"
+
 const app = express()
 app.use(cors())
 
@@ -47,6 +48,7 @@ app.use(session({
     resave: true,
     saveUninitialized: true
 }))
+
 //Passport configuration
 initializePassport()
 app.use(passport.initialize())
@@ -56,41 +58,48 @@ app.use(passport.session())
 try {
     await mongoose.connect("mongodb+srv://atreyu2406:benja2012@cluster0.2dskaxd.mongodb.net/ecommerce");
     console.log("Connected to MongoDB Atlas successfully!");
+    //socket.io configuration
+    const serverHttp = app.listen(8080, () => console.log("Server Up..."))
+    const io = new Server(serverHttp)
+    app.use((req, res, next) => {
+        req.io = io
+        next()
+    })
+
+    app.get("/", (req, res) => res.render("index"))
+    app.use("/api/products", productsRouter)
+    app.use("/api/carts", cartsRouter)
+    app.use("/products", viewsRouter)
+    app.use("/chat", chatRouter)
+    app.use("/session", sessionRouter)
+
+    const messages = []
+
+    io.on("connection", async socket => {
+        console.log("A connection has been made")
+        socket.broadcast.emit("alert")
+        socket.emit("logs", messages)
+        socket.on("message", async data => {
+            await messageModel.create(data)
+            let messages = await messageModel.find().lean().exec()
+            // messages.push(data)
+            io.emit("logs", messages)
+        })
+        socket.on("productList", data => {
+            console.log("Product list received on the server:", data);
+            io.emit("updatedProducts", data)
+        })
+    })
 } catch(err) {
     console.error("Error connecting to MongoDB Atlas:", err.message);
 }
 
-//socket.io configuration
-const serverHttp = app.listen(8080, () => console.log("Server Up..."))
-const io = new Server(serverHttp)
-app.use((req, res, next) => {
-    req.io = io
-    next()
-})
 
-app.use("/api/products", productsRouter)
-app.use("/api/carts", cartsRouter)
-app.use("/products", viewsRouter)
-app.use("/chat", chatRouter)
-app.use("/session", sessionRouter)
 
-const messages = []
 
-io.on("connection", socket => {
-    console.log("A connection has been made")
-    socket.broadcast.emit("alert")
-    socket.emit("logs", messages)
-    socket.on("message", async data => {
-        await messageModel.create(data)
-        let messages = await messageModel.find().lean().exec()
-        // messages.push(data)
-        io.emit("logs", messages)
-    })
-    socket.on("productList", data => {
-        console.log("Product list received on the server:", data);
-        io.emit("updatedProducts", data)
-    })
-})
+
+
+
 
 
 

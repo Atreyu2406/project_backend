@@ -1,9 +1,11 @@
 import { Router } from "express";
-import userModel from "../dao/models/user.model.js";
-import { isValidPassword } from "../utils.js"
 import passport from "passport";
 
 const router = Router()
+
+//View to register with GitHub
+router.get("/github", passport.authenticate("github", { scope: ["user:email"] }), async(req, res) => {
+})
 
 //View to register users
 router.get("/register", (req, res) => {
@@ -37,13 +39,18 @@ router.get("/login", (req, res) => {
 })
 
 //API to login
-router.post("/login", async(req, res) => {
-    const { email, password } = req.body
-    const user = await userModel.findOne({ email }).lean().exec()
-    if(!user) return res.status(401).json({ status: "error", error: "User not found" })
-    if(!isValidPassword(user, password)) return res.status(403).json({ status: "error", error: "Password incorrect" })
-    req.session.user = user
+router.post("/login", passport.authenticate("login", { failureRedirect: "/session/failLogin" }), async(req, res) => {
+    // const { email, password } = req.body
+    // const user = await userModel.findOne({ email }).lean().exec()
+    // if(!user) return res.status(401).json({ status: "error", error: "User not found" })
+    // if(!isValidPassword(user, password)) return res.status(403).json({ status: "error", error: "Password incorrect" })
+    // req.session.user = user
     res.redirect("/products")
+})
+
+//View to failLogin
+router.get("/failLogin", (req, res) => {
+    res.json({ status: "error", error: "Failed login"})
 })
 
 //Close session
@@ -58,27 +65,5 @@ router.get("/logout", (req, res) => {
 //     if(req.session?.user && req.session.user.username === "admin@cogerhouse.com") return next()
 //     return res.status(401).json({ status: "fail", message: "Auth error" })
 // }
-
-// router.get("/profile", (req, res) => {
-//     const user = {
-//         username: "damianmonti",
-//         ui_preference: "dark",
-//         language: "es",
-//         location: "arg"
-//     }
-//     req.session.user = user
-//     res.json({ status: "success", message: "session created" })
-// })
-
-// router.get("/preference", (req, res) => {
-//     res.send(req.session.user.username)
-// })
-
-// router.get("/delete", (req, res) => {
-//     req.session.destroy(err => {
-//         if(err) return res.json({ status: "error", message: "An error occurred" })
-//         return res.json({ status: "success", message: "Session deleted" })
-//     })
-// })
 
 export default router
