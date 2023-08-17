@@ -7,6 +7,14 @@ const router = Router()
 router.get("/github", passport.authenticate("github", { scope: ["user:email"] }), async(req, res) => {
 })
 
+//View to GitHub Callback
+router.get("/githubcb", passport.authenticate("github", { failureRedirect: "/login" }), async(req, res) => {
+    console.log("Callback: ", req.user)
+    req.session.user = req.user
+    console.log("User session: ", req.session.user)
+    res.redirect("/")
+})
+
 //View to register users
 router.get("/register", (req, res) => {
     res.render("sessions/register")
