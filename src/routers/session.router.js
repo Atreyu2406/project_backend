@@ -11,7 +11,6 @@ router.get("/github", passport.authenticate("github", { scope: ["user:email"] })
 router.get("/githubcb", passport.authenticate("github", { failureRedirect: "/login" }), async(req, res) => {
     console.log("Callback: ", req.user)
     req.session.user = req.user
-    console.log("User session: ", req.session.user)
     res.redirect("/")
 })
 
@@ -67,6 +66,12 @@ router.get("/logout", (req, res) => {
         if(err) res.status(500).json({ status: "error", error: err.message })
         res.redirect("/session/login")
     })
+})
+
+//Current
+router.get("/current", (req, res) => {
+    if(!req.session.user) return res.status(401).json({ status: "error", error: "No session detected" })
+    res.status(200).json({ status: "success", payload: req.session.user })
 })
 
 // const auth = (req, res, next) => {
